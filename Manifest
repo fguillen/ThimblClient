@@ -1,0 +1,10 @@
+Gemfile
+README.md
+Rakefile
+etc/finger.txt
+lib/finger.rb
+lib/thimbl.rb
+test/fixtures/cache.json
+test/thimbl_test.rb
+thimbl.rb
+Manifest
