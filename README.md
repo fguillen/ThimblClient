@@ -12,6 +12,7 @@ This version is in development, not ready for any production environment.
    
 ## Use
 
+    require 'rubygems'
     require 'thimbl'
     thimbl = Thimbl.new( '/tmp/plan', '/tmp/thimbl_cache' )
     thimbl.setup(
