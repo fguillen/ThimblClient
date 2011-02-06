@@ -44,6 +44,5 @@ This version is in development, not ready for any production environment.
     
 ## TODO
 
-* Improve the test, now they only call to the methods but don't match the results
 * Document a little bit the methods and the architecture
 * Command **push**

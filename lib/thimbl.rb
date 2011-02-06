@@ -48,14 +48,12 @@ class Thimbl
   end
   
   def post( text )
-    load_data
-
     message = {
-      :address => address,
-      :time => Time.now.strftime('%Y%m%d%H%M%S'),
-      :text => text
+      'address' => address,
+      'time' => Time.now.strftime('%Y%m%d%H%M%S'),
+      'text' => text
     }
-          
+
     data['plans'][address]['messages'] << message
     save_data
     
@@ -63,16 +61,13 @@ class Thimbl
   end
   
   def follow( follow_nick, follow_address )
-    load_data
-    data['plans'][address]['following'] << { :nick => follow_nick, :address => follow_address }
+    data['plans'][address]['following'] << { 'nick' => follow_nick, 'address' => follow_address }
     save_data
     
     return self
   end
   
   def fetch
-    load_data
-
     following.map { |f| f['address'] }.each do |followed_address|
       address_finger = Finger.run followed_address
       address_plan = address_finger.match(/Plan:\s*(.*)/m)[1].gsub("\n",'')
@@ -85,8 +80,6 @@ class Thimbl
   end
   
   def print
-    load_data
-    
     result = ""
     messages.each do |message|
       result += Thimbl.parse_time( message['time'] ).strftime( '%Y-%m-%d %H:%M:%S' )

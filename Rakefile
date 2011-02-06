@@ -8,6 +8,6 @@ Echoe.new('thimbl', '0.0.1') do |p|
   p.author          = "Fernando Guillen"
   p.email           = "fguillen.mail@gmail.com"  
   p.ignore_pattern  = ['etc/*']
-  p.development_dependencies = ['mocha', 'ruby-debug']
+  p.development_dependencies = ['mocha', 'ruby-debug', 'delorean']
   p.runtime_dependencies = []
 end
