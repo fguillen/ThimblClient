@@ -1,0 +1,38 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    chronic (0.3.0)
+    columnize (0.3.2)
+    delorean (0.2.1)
+      chronic
+    echoe (4.3.1)
+      gemcutter
+      rubyforge
+    gemcutter (0.6.1)
+    json (1.5.1)
+    json_pure (1.5.1)
+    linecache (0.43)
+    mocha (0.9.11)
+      rake
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
+    net-ssh (2.1.0)
+    rake (0.8.7)
+    ruby-debug (0.10.4)
+      columnize (>= 0.1)
+      ruby-debug-base (~> 0.10.4.0)
+    ruby-debug-base (0.10.4)
+      linecache (>= 0.3)
+    rubyforge (2.0.4)
+      json_pure (>= 1.1.7)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  delorean
+  echoe
+  json
+  mocha
+  net-scp
+  ruby-debug

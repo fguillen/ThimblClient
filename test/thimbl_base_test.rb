@@ -1,14 +1,7 @@
-require "#{File.dirname(__FILE__)}/../lib/thimbl"
-require 'test/unit'
-require 'mocha'
-require 'ruby-debug'
-require 'delorean'
+require "#{File.dirname(__FILE__)}/test_helper"
 
-class ThimblTest < Test::Unit::TestCase
+class ThimblBaseTest < Test::Unit::TestCase
   def setup
-    @plan_path = '/tmp/plan'
-    @cache_path = '/tmp/cache'
-    
     @data = {
       'me'    => 'my address',
       'plans' => {
@@ -29,18 +22,25 @@ class ThimblTest < Test::Unit::TestCase
   end
   
   def teardown
-    File.delete( @plan_path )   if File.exists? @plan_path
-    File.delete( @cache_path )  if File.exists? @cache_path
   end
   
   def test_new
-    thimbl = Thimbl.new( 'plan_path', 'cache_path' )
+    thimbl = 
+      Thimbl::Base.new( 
+        'plan_path'  => 'plan_path', 
+        'cache_path' => 'cache_path',
+        'user'       => 'user',
+        'password'   => 'password'
+      )
+      
     assert_equal( 'plan_path', thimbl.plan_path )
     assert_equal( 'cache_path', thimbl.cache_path )
+    assert_equal( 'user', thimbl.user )
+    assert_equal( 'password', thimbl.password )
   end
   
   def test_setup_without_options
-    thimbl = Thimbl.new( nil, nil )
+    thimbl = Thimbl::Base.new
     thimbl.expects(:save_data)
     thimbl.setup
     
@@ -58,15 +58,15 @@ class ThimblTest < Test::Unit::TestCase
   end
   
   def test_setup_with_options
-    thimbl = Thimbl.new( nil, nil )
+    thimbl = Thimbl::Base.new
     thimbl.expects(:save_data)
     thimbl.setup(
-      :bio      => 'my bio',
-      :website  => 'my website', 
-      :mobile   => 'my mobile', 
-      :email    => 'my email', 
-      :address  => 'my address', 
-      :name     => 'my name'
+      'bio'      => 'my bio',
+      'website'  => 'my website', 
+      'mobile'   => 'my mobile', 
+      'email'    => 'my email', 
+      'address'  => 'my address', 
+      'name'     => 'my name'
     )
     
     assert_equal( 'my address', thimbl.address )
@@ -80,8 +80,8 @@ class ThimblTest < Test::Unit::TestCase
   end
   
   def test_post
-    Thimbl.any_instance.expects(:save_data)
-    thimbl = Thimbl.new( nil, nil )
+    Thimbl::Base.any_instance.expects(:save_data)
+    thimbl = Thimbl::Base.new
     
     thimbl.stubs( :address ).returns( @data['me'] )
     thimbl.stubs( :data ).returns( @data )
@@ -97,8 +97,8 @@ class ThimblTest < Test::Unit::TestCase
   end
   
   def test_follow
-    Thimbl.any_instance.expects(:save_data)
-    thimbl = Thimbl.new( nil, nil )
+    Thimbl::Base.any_instance.expects(:save_data)
+    thimbl = Thimbl::Base.new
     thimbl.stubs( :address ).returns( @data['me'] )
     thimbl.stubs( :data ).returns( @data )
     
@@ -113,21 +113,21 @@ class ThimblTest < Test::Unit::TestCase
     finger_fixture = File.read "#{File.dirname(__FILE__)}/fixtures/finger_dk_telekommunisten_org.txt"
     finger_sequence = sequence('finger_sequence')
       
-    Finger.
+    Thimbl::Finger.
       expects(:run).
       with( 'wadus1@telekommunisten.org' ).
       returns( finger_fixture ).
       in_sequence( finger_sequence )
       
-    Finger.
+    Thimbl::Finger.
       expects(:run).
       with( 'wadus2@telekommunisten.org' ).
       returns( finger_fixture ).
       in_sequence( finger_sequence )
       
-    Thimbl.any_instance.expects(:save_data)
+    Thimbl::Base.any_instance.expects(:save_data)
     
-    thimbl = Thimbl.new( nil, nil )
+    thimbl = Thimbl::Base.new
     thimbl.stubs(:data).returns( @data )
     thimbl.expects(:following).returns( [ 
       {'nick' => 'wadus1', 'address' => 'wadus1@telekommunisten.org' },
@@ -142,14 +142,14 @@ class ThimblTest < Test::Unit::TestCase
   
   def test_fetch_with_plan_with_two_break_lines
     finger_fixture = File.read "#{File.dirname(__FILE__)}/fixtures/finger_dk_telekommunisten_org_two_break_lines.txt"
-    Finger.
+    Thimbl::Finger.
       expects(:run).
       with( 'wadus1@telekommunisten.org' ).
       returns( finger_fixture )
       
-    Thimbl.any_instance.expects(:save_data)
+    Thimbl::Base.any_instance.expects(:save_data)
     
-    thimbl = Thimbl.new( nil, nil )
+    thimbl = Thimbl::Base.new
     thimbl.stubs(:data).returns( @data )
     thimbl.expects(:following).returns( [{'nick' => 'wadus1', 'address' => 'wadus1@telekommunisten.org' }] )
     
@@ -158,8 +158,14 @@ class ThimblTest < Test::Unit::TestCase
     assert_equal( 22, thimbl.data['plans']['wadus1@telekommunisten.org']['messages'].count )
   end
   
+  def test_push
+    thimbl = Thimbl::Base.new( 'user' => 'user@domain', 'password' => 'my password' )
+    Net::SCP.expects(:start).with( 'domain', 'user', :password => 'my password' )
+    thimbl.push
+  end
+  
   def test_load_data
-    thimbl = Thimbl.new( nil, "#{File.dirname(__FILE__)}/fixtures/cache.json" )
+    thimbl = Thimbl::Base.new( 'cache_path' => "#{File.dirname(__FILE__)}/fixtures/cache.json" )
     thimbl.load_data
     
     assert_equal( 'fguillen@telekommunisten.org', thimbl.data['me'] )
@@ -168,7 +174,7 @@ class ThimblTest < Test::Unit::TestCase
   end
   
   def test_messages
-    thimbl = Thimbl.new( nil, "#{File.dirname(__FILE__)}/fixtures/cache.json" )
+    thimbl = Thimbl::Base.new( 'cache_path' => "#{File.dirname(__FILE__)}/fixtures/cache.json" )
     thimbl.load_data
     assert_equal( 24, thimbl.messages.size )
   end
@@ -187,7 +193,7 @@ class ThimblTest < Test::Unit::TestCase
       }
     ]
     
-    thimbl = Thimbl.new( nil, nil )
+    thimbl = Thimbl::Base.new
     thimbl.expects( :messages ).returns( messages )
     
     print = thimbl.print
@@ -198,17 +204,17 @@ class ThimblTest < Test::Unit::TestCase
   end
   
   def test_save_data
-    thimbl = Thimbl.new( @plan_path, @cache_path )
+    thimbl = Thimbl::Base.new( 'plan_path' => '/tmp/plan_path', 'cache_path' => '/tmp/cache_path' )
     thimbl.stubs( :address ).returns( @data['me'] )
     thimbl.stubs( :data ).returns( @data )
     thimbl.data
     thimbl.save_data
     
-    assert_equal( thimbl.data['plans'][thimbl.address], JSON.load( File.read @plan_path ) )
-    assert_equal( thimbl.data, JSON.load( File.read @cache_path ) )
+    assert_equal( thimbl.data['plans'][thimbl.address], JSON.load( File.read '/tmp/plan_path' ) )
+    assert_equal( thimbl.data, JSON.load( File.read '/tmp/cache_path' ) )
   end
   
   def test_parse_time
-    assert_equal( Time.utc( 2010, 11, 29, 6, 3, 35 ), Thimbl.parse_time( '20101129060335' ) )
+    assert_equal( Time.utc( 2010, 11, 29, 6, 3, 35 ), Thimbl::Base.parse_time( '20101129060335' ) )
   end
 end

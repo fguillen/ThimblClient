@@ -1,2 +1,4 @@
 etc/
 pkg/
+.rvmrc
+.bundle/

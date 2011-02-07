@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+# Use:
+#     thimbl setup ~/thimbl_plan ~/thimbl_cache 'user@thimblserver.com' 'thimblpass'
+#     thimbl follow 'dk' 'dk@telekommunisten.org'
+#     thimbl fetch
+#     thimbl print
+#     thimbl post "My first message :)"
+#     thimbl push
+
+begin
+  require 'thimbl'
+rescue LoadError
+  require 'rubygems'
+  require 'thimbl'
+end
+
+if ARGV.empty?
+  puts "use: $ thimbl <command>"
+  exit 1
+end
+
+begin
+  case ARGV[0]
+  when 'setup';   Thimbl::Command.setup( *ARGV[1..4] ); puts "setup completed"
+  when 'print';   puts Thimbl::Command.print
+  when 'fetch';   Thimbl::Command.fetch; puts "fecth completed"
+  when 'post';    Thimbl::Command.post ARGV[1]; puts "post completed"
+  when 'push';    Thimbl::Command.push; puts "push completed"
+  when 'follow';  Thimbl::Command.follow( ARGV[1], ARGV[2] ); puts "follow completed"
+  else
+    puts "command not valid '#{ARGV[0]}'"
+  end
+rescue ArgumentError => e
+  puts e.message
+end
