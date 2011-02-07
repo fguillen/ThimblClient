@@ -46,3 +46,4 @@ This version is in development, not ready for any production environment.
 
 * Document a little bit the methods and the architecture
 * Command **push**
+* Shell script /bin/thimbl

@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/../thimbl"
+require "#{File.dirname(__FILE__)}/../lib/thimbl"
 require 'test/unit'
 require 'mocha'
 require 'ruby-debug'
@@ -138,6 +138,24 @@ class ThimblTest < Test::Unit::TestCase
     
     assert_equal( 21, thimbl.data['plans']['wadus1@telekommunisten.org']['messages'].count )
     assert_equal( 21, thimbl.data['plans']['wadus2@telekommunisten.org']['messages'].count )
+  end
+  
+  def test_fetch_with_plan_with_two_break_lines
+    finger_fixture = File.read "#{File.dirname(__FILE__)}/fixtures/finger_dk_telekommunisten_org_two_break_lines.txt"
+    Finger.
+      expects(:run).
+      with( 'wadus1@telekommunisten.org' ).
+      returns( finger_fixture )
+      
+    Thimbl.any_instance.expects(:save_data)
+    
+    thimbl = Thimbl.new( nil, nil )
+    thimbl.stubs(:data).returns( @data )
+    thimbl.expects(:following).returns( [{'nick' => 'wadus1', 'address' => 'wadus1@telekommunisten.org' }] )
+    
+    thimbl.fetch
+    
+    assert_equal( 22, thimbl.data['plans']['wadus1@telekommunisten.org']['messages'].count )
   end
   
   def test_load_data

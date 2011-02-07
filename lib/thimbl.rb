@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'json'
+require 'net/scp'
 require "#{File.dirname(__FILE__)}/finger"
 
 class Thimbl
@@ -70,7 +71,7 @@ class Thimbl
   def fetch
     following.map { |f| f['address'] }.each do |followed_address|
       address_finger = Finger.run followed_address
-      address_plan = address_finger.match(/Plan:\s*(.*)/m)[1].gsub("\n",'')
+      address_plan = address_finger.match(/Plan:\s*(.*)/m)[1].gsub("\\\n",'')
       data['plans'][followed_address] = JSON.load( address_plan )
     end
     
@@ -91,6 +92,12 @@ class Thimbl
     return result
   end
   
+  def push
+    Net::SCP.start("telekommunisten.org", "fguillen", :password => "xxx") do |scp|
+      scp.upload!( plan_path, ".plan" )
+    end    
+  end
+
   def load_data
     @data = JSON.load( File.read cache_path )
     @address = data['me']
