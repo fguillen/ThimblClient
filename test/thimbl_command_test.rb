@@ -14,26 +14,19 @@ class CommandTest < Test::Unit::TestCase
   end
   
   def test_setup
-    Thimbl::Command.stubs( :config_file ).returns( '/tmp/.thimbl/config_file' )
-    Thimbl::Command.expects( :load ).returns( Thimbl::Base.new )
-    Thimbl::Base.any_instance.expects( :setup )
-    
-    Thimbl::Command.setup( 'plan_path', 'cache_path', 'user', 'password' )
+    temp_file = Tempfile.new('cache.json')
+    Thimbl::Command.stubs( :cache_path ).returns( temp_file.path )
+    Thimbl::Command.setup( 'me@thimbl.net' )
 
-    config_written = JSON.load( File.read( '/tmp/.thimbl/config_file' ) )
+    cache_written = JSON.load temp_file.read
+    assert_equal 'me@thimbl.net', cache_written['me']
     
-    assert_equal( 'plan_path', config_written['plan_path'] )
-    assert_equal( 'cache_path', config_written['cache_path'] )
-    assert_equal( 'user', config_written['user'] )
-    assert_equal( 'password', config_written['password'] )
-    
-    FileUtils.remove_dir '/tmp/.thimbl'
+    temp_file.unlink
   end
   
   def test_print
     thimbl = Thimbl::Base.new
     Thimbl::Command.expects( :load ).returns( thimbl )
-    thimbl.expects( :load_data )
     thimbl.expects( :print )
     
     Thimbl::Command.print
@@ -42,7 +35,6 @@ class CommandTest < Test::Unit::TestCase
   def test_fetch
     thimbl = Thimbl::Base.new
     Thimbl::Command.expects( :load ).returns( thimbl )
-    thimbl.expects( :load_data )
     thimbl.expects( :fetch )
 
     Thimbl::Command.fetch
@@ -57,7 +49,6 @@ class CommandTest < Test::Unit::TestCase
   def test_post
     thimbl = Thimbl::Base.new
     Thimbl::Command.expects( :load ).returns( thimbl )
-    thimbl.expects( :load_data )
     thimbl.expects( :post ).with( 'wadus' )
     
     Thimbl::Command.post 'wadus'
@@ -66,10 +57,9 @@ class CommandTest < Test::Unit::TestCase
   def test_push
     thimbl = Thimbl::Base.new
     Thimbl::Command.expects( :load ).returns( thimbl )
-    thimbl.expects( :load_data )
-    thimbl.expects( :push )
+    thimbl.expects( :push ).with( 'pass' )
     
-    Thimbl::Command.push
+    Thimbl::Command.push 'pass'
   end
   
   def test_follow_should_raise_error_if_wrong_parameters
@@ -81,14 +71,13 @@ class CommandTest < Test::Unit::TestCase
   def test_follow
     thimbl = Thimbl::Base.new
     Thimbl::Command.expects( :load ).returns( thimbl )
-    thimbl.expects( :load_data )
     thimbl.expects( :follow ).with( 'wadus', 'wadus@domain.com' )
 
     Thimbl::Command.follow 'wadus', 'wadus@domain.com'
   end
   
   def test_load_should_raise_error_if_not_config_file
-    Thimbl::Command.stubs( :config_file ).returns( '/tmp/not_exists_file' )
+    Thimbl::Command.stubs( :cache_path ).returns( '/tmp/not_exists_file' )
     
     assert_raise( ArgumentError ) do
       Thimbl::Command.load
@@ -96,11 +85,16 @@ class CommandTest < Test::Unit::TestCase
   end
   
   def test_load
-    Thimbl::Command.stubs( :config_file ).returns( '/tmp/config_file' )
-    File.expects( :exists? ).with( '/tmp/config_file' ).returns( true )
-    File.expects( :read ).with( '/tmp/config_file' ).returns( "{ \"a\" : 1 }" )
-    Thimbl::Base.expects( :new ).with( { 'a' => 1 } )
+    temp_file = Tempfile.new 'cache.json'
+    temp_file.write "{ \"a\" : 1 }"
+    temp_file.close
+    
+    Thimbl::Command.stubs( :cache_path ).returns( temp_file.path )
 
-    Thimbl::Command.load
+    thimbl = Thimbl::Command.load
+    
+    assert_equal 1, thimbl.data['a']
+    
+    temp_file.unlink
   end
 end

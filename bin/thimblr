@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 
 # Use:
-#     thimbl setup ~/thimbl_plan ~/thimbl_cache 'user@thimblserver.com' 'thimblpass'
-#     thimbl follow 'dk' 'dk@telekommunisten.org'
-#     thimbl fetch
-#     thimbl print
-#     thimbl post "My first message :)"
-#     thimbl push
+#     thimblr setup 'user@thimblrserver.com'
+#     thimblr follow 'dk' 'dk@telekommunisten.org'
+#     thimblr fetch
+#     thimblr print
+#     thimblr post "My first message :)"
+#     thimblr push
 
 begin
   require 'thimbl'
@@ -26,11 +26,13 @@ begin
   when 'print';   puts Thimbl::Command.print
   when 'fetch';   Thimbl::Command.fetch; puts "fecth completed"
   when 'post';    Thimbl::Command.post ARGV[1]; puts "post completed"
-  when 'push';    Thimbl::Command.push; puts "push completed"
+  when 'push';    Thimbl::Command.push ARGV[1]; puts "push completed"
   when 'follow';  Thimbl::Command.follow( ARGV[1], ARGV[2] ); puts "follow completed"
   else
     puts "command not valid '#{ARGV[0]}'"
+    exit 1
   end
 rescue ArgumentError => e
   puts e.message
+  exit 1
 end
