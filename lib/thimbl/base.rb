@@ -142,13 +142,21 @@ module Thimbl
     # Returns all the messages of you and all the users you are following
     # in a chronologic order into a json format.
     def messages
-      _messages = []
-      data['plans'].each_pair do |k,v|
-        _messages += v['messages'].map { |m| m['address'] = k; m }
+      result = []
+      
+      data['plans'].each_pair do |address, plan|
+        plan['messages'].each do |message|
+          result << {
+            'address' => address,
+            'time'    => Thimbl::Utils.parse_time( message['time'] ),
+            'text'    => message['text']
+          }
+        end
       end
-      _messages = _messages.sort { |a,b| a['time'].to_s <=> b['time'].to_s }
+      
+      result = result.sort { |a,b| a['time'].to_s <=> b['time'].to_s }
     
-      return _messages
+      return result
     end
 
     # Returns the actual thimbl user account

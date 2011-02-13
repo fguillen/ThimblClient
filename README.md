@@ -12,10 +12,6 @@ I have follow the style of the [Thimbl Python client](https://github.com/blippy/
 * print
 * push
 
-## Architecture
-
-This client is only manipulating json files, the one with your **personal plan** and the other with the **complete cache** of the timeline of the people you are following.
-
 ## Version
 
 This version is in development, not ready for any production environment.

@@ -136,8 +136,13 @@ class ThimblBaseTest < Test::Unit::TestCase
   def test_messages
     thimbl = Thimbl::Base.new
     thimbl.data = JSON.load File.read "#{File.dirname(__FILE__)}/fixtures/cache.json"
+
+    message = thimbl.messages.first
     
     assert_equal( 24, thimbl.messages.size )
+    assert_equal 'dk@telekommunisten.org', message['address']
+    assert_equal 'http://kleiner.posterous.com/last-to-chance-to-vote-for-thimbl-we-need-you', message['text']
+    assert_equal Time.utc( 2011, 2, 4, 14, 57, 19 ), message['time']
   end
   
   def test_print
