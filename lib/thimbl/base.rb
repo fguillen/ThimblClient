@@ -130,7 +130,7 @@ module Thimbl
     def print
       result = ""
       messages.each do |message|
-        result += Thimbl::Utils.parse_time( message['time'] ).strftime( '%Y-%m-%d %H:%M:%S' )
+        result += message['time'].strftime( '%Y-%m-%d %H:%M:%S' )
         result += " #{message['address']}"
         result += " > #{message['text']}"
         result += "\n"
