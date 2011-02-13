@@ -85,7 +85,7 @@ module Thimbl
     
     # Post a new message in your time-line and push the modifications to the server.
     def post!( text, password )
-      post
+      post text
       push password
     end
   

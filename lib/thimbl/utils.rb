@@ -8,7 +8,11 @@ module Thimbl
     end
     
     def self.parse_time( time )
-      Time.utc( time[0,4], time[4,2], time[6,2], time[8,2], time[10,2], time[12,2] )
+      if time.is_a? Numeric
+        Time.at time
+      else
+        Time.utc( time[0,4], time[4,2], time[6,2], time[8,2], time[10,2], time[12,2] )
+      end
     end
   end
 end
