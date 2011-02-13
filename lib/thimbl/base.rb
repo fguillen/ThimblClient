@@ -145,6 +145,7 @@ module Thimbl
       result = []
       
       data['plans'].each_pair do |address, plan|
+        next  if plan['messages'].nil?
         plan['messages'].each do |message|
           result << {
             'address' => address,
@@ -154,7 +155,7 @@ module Thimbl
         end
       end
       
-      result = result.sort { |a,b| a['time'].to_s <=> b['time'].to_s }
+      result = result.sort { |a,b| a['time'] <=> b['time'] }
     
       return result
     end

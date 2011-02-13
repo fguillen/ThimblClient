@@ -137,12 +137,25 @@ class ThimblBaseTest < Test::Unit::TestCase
     thimbl = Thimbl::Base.new
     thimbl.data = JSON.load File.read "#{File.dirname(__FILE__)}/fixtures/cache.json"
 
-    message = thimbl.messages.first
-    
     assert_equal( 24, thimbl.messages.size )
-    assert_equal 'dk@telekommunisten.org', message['address']
-    assert_equal 'http://kleiner.posterous.com/last-to-chance-to-vote-for-thimbl-we-need-you', message['text']
-    assert_equal Time.utc( 2011, 2, 4, 14, 57, 19 ), message['time']
+    
+    first = thimbl.messages.first
+    last = thimbl.messages.last
+    
+    assert_equal 'dk@telekommunisten.org', first['address']
+    assert_equal '@bernd, would be cool to inegrate thimbl in http://bau-ha.us\\!', first['text']
+    assert_equal Time.utc( 2010, 11, 29, 6, 3, 35 ), first['time']
+    
+    assert_equal 'fguillen@telekommunisten.org', last['address']
+    assert_equal 'testing 3', last['text']
+    assert_equal Time.utc( 2011, 2, 5, 15, 22, 47 ), last['time']
+  end
+  
+  def test_messages_with_nil_error
+    thimbl = Thimbl::Base.new
+    thimbl.data = JSON.load File.read "#{File.dirname(__FILE__)}/fixtures/cache_error_nil.json"
+
+    assert_not_nil thimbl.messages
   end
   
   def test_print
