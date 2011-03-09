@@ -1,0 +1,6 @@
+2010-07-07 12:51:20 user@thimbl.net > messages_1 b
+2010-07-07 12:51:26 mike@mikepearce.net > messages_2 b
+2010-07-07 12:51:36 rw@telekommunisten.org > messages_3 b
+2010-11-05 12:44:06 rw@telekommunisten.org > messages_3 a
+2010-11-05 12:44:12 user@thimbl.net > messages_1 a
+2010-11-05 12:44:16 mike@mikepearce.net > messages_2 a

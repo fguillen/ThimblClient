@@ -1,0 +1,22 @@
+{
+    "following": [
+        {
+            "address": "mike@mikepearce.net",
+            "nick": "mike"
+        },
+        {
+            "address": "rw@telekommunisten.org",
+            "nick": "rico"
+        }
+    ],
+    "messages": [
+        {
+            "text": "messages_1 a",
+            "time": "20101105124412"
+        },
+        {
+            "text": "messages_1 b",
+            "time": "20100707125120"
+        }
+    ]
+}

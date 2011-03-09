@@ -1,78 +1,67 @@
 # Thimbl ruby client
 #
 # Author: fernandoguillen.info
-#
 # Code: https://github.com/fguillen/ThimblClient
-#
 # Use:
 #     require 'rubygems'
 #     require 'thimbl'
 #     thimbl =
 #       Thimbl::Base.new(
-#         'bio'      => 'my bio',
-#         'website'  => 'my website', 
-#         'mobile'   => 'my mobile', 
-#         'email'    => 'my email', 
-#         'address'  => 'username@thimbl.net', 
-#         'name'     => 'my name'
+#         'user@thimbl.net',
+#         {
+#           :bio      => 'my bio',
+#           :website  => 'my website', 
+#           :mobile   => 'my mobile', 
+#           :email    => 'my email', 
+#           :name     => 'my name'
+#         }
 #       )
 #     thimbl.follow 'dk', 'dk@telekommunisten.org'
 #     thimbl.fetch
-#     thimbl.print
+#     thimbl.messages
 #     thimbl.post 'My first post'
-#     thimbl.push <password>
+#     thimbl.push 'password'
 #
 module Thimbl
+  class NoPlanException < Exception; end
   class Base
-    attr_accessor :data
+    attr_accessor :data, :address
   
-    # Initialize a new configuration, the execution of this method
-    # will delete any thing in the `thimbl.plan_path` file and `thimbl.cache_path` file.
+    # Initialize a new configuration
     #
     # Use:
     #     thimbl =
     #       Thimbl::Base.new(
-    #        :bio      => 'bio',
-    #        :website  => 'website', 
-    #        :mobile   => 'mobile', 
-    #        :email    => 'email', 
-    #        :address  => 'address', 
-    #        :name     => 'name'
-    #     )
+    #         'user@thimbl.net', 
+    #         {  
+    #           :bio      => 'bio',
+    #           :website  => 'website', 
+    #           :mobile   => 'mobile', 
+    #           :email    => 'email', 
+    #           :name     => 'name'
+    #         }
+    #       )
     #
     # or just:
     #
-    #     thimbl = Thimbl::Base.new
-    def initialize( opts = {} )
-      opts = { 
-        'bio'      => 'bio',
-        'website'  => 'website', 
-        'mobile'   => 'mobile', 
-        'email'    => 'email', 
-        'address'  => 'address', 
-        'name'     => 'name'
-      }.merge( opts )
-    
+    #     thimbl = Thimbl::Base.new( 'user@thimbl.net' )
+    def initialize( address, opts = {} )
+      @address = address
       @data = {
-        'me'    => opts['address'],
-        'plans' => {
-          opts['address'] => {
-            'name' => opts['name'],
-            'bio'  => opts['bio'],
-            'properties' => {
-              'email'   => opts['email'],
-              'mobile'  => opts['mobile'],
-              'website' => opts['website']
-            },
-            'following'  => [],
-            'messages'   => [],
-            'replies'    => {}
-          }
-        }
+        'name' => opts[:name],
+        'bio'  => opts[:bio],
+        'properties' => {
+          'email'   => opts[:email],
+          'mobile'  => opts[:mobile],
+          'website' => opts[:website]
+        },
+        'following'  => [],
+        'messages'   => [],
+        'replies'    => {}
       }
     end
   
-    # Post a new message in your time-line.
+    # Post a new message in user's time-line.
     # _This method doesn't push the modifications to de server._
     def post( text )
       message = {
@@ -80,99 +69,121 @@ module Thimbl
         'text' => text
       }
 
-      data['plans'][me]['messages'] << message
+      data['messages'] << message
     end
     
-    # Post a new message in your time-line and push the modifications to the server.
+    # Post a new message in user's time-line and push the modifications to the server.
     def post!( text, password )
       post text
       push password
     end
   
-    # Add a new user to your following
+    # Add a new user to user's following
     # _This method doesn't push the modifications to de server._
     def follow( follow_nick, follow_address )
-      return  if data['plans'][me]['following'].count { |e| e['address'] == follow_address } != 0
-      data['plans'][me]['following'] << { 'nick' => follow_nick, 'address' => follow_address }
+      return  if following.count { |e| e.address == follow_address } != 0
+      data['following'] << { 'nick' => follow_nick, 'address' => follow_address }
     end
     
-    # Add a new user to your following and push the modifications to the server.
+    # Add a new user to user's following and push the modifications to the server.
     def follow!( follow_nick, follow_address, password )
       follow follow_nick, follow_address
       push password
     end
   
-    # Fetch all the info and timelines of all the users you are following.
-    # Even you, so any not pushed modification will be overwritten
+    # Remove a user from the user's following
+    # _This method doesn't push the modifications to de server._
+    def unfollow( follow_address )
+      data['following'].delete_if { |e| e['address'] == follow_address }
+    end
+  
+    # Remove a new from user's following and push the modifications to the server.
+    def unfollow!( follow_address, password )
+      unfollow follow_address
+      push password
+    end
+  
+    # Updating cached .plan
+    # Any not pushed modification will be deleted
     def fetch
-      following_and_me = following.map { |f| f['address'] } << me
-      following_and_me.uniq.each do |address|
-        address_finger = Thimbl::Finger.run address
-        next  if address_finger.nil? || address_finger.match(/Plan:\s*(.*)/m).nil?
-        address_plan = address_finger.match(/Plan:\s*(.*)/m)[1].gsub("\\\n",'')
-        data['plans'][address] = JSON.load( address_plan )
-      end
+      @data = JSON.load( fetch_plan )
     end
     
-    # Send your actual `plan` file to your server
-    # It requires the password of your thimbl user
+    # Send user's cached .plan to user's server
+    # It requires the password of user's thimbl user
     def push( password )
-      tmp_path = Thimbl::Utils.to_file plan.to_json
-      Net::SCP.start( me.split('@')[1], me.split('@')[0], :password => password ) do |scp|
+      tmp_path = Thimbl::Utils.to_file( data.to_json )
+      Net::SCP.start( address.split('@')[1], address.split('@')[0], :password => password ) do |scp|
         scp.upload!( tmp_path, ".plan" )
       end
     end
   
-    # Print every message of you and all the users you are following.
-    #
-    # The method doesn't print anything by it self. It just returns an string
-    # with all the comments.
-    def print
-      result = ""
-      messages.each do |message|
-        result += message['time'].strftime( '%Y-%m-%d %H:%M:%S' )
-        result += " #{message['address']}"
-        result += " > #{message['text']}"
-        result += "\n"
-      end
-    
-      return result
-    end
-  
-    # Returns all the messages of you and all the users you are following
-    # in a chronologic order into a json format.
+    # Returns all this user's messages 
+    # in a chronologic order.
     def messages
       result = []
       
-      data['plans'].each_pair do |address, plan|
-        next  if plan['messages'].nil?
-        plan['messages'].each do |message|
-          result << {
-            'address' => address,
-            'time'    => Thimbl::Utils.parse_time( message['time'] ),
-            'text'    => message['text']
-          }
-        end
+      data['messages'].each do |message|
+        result << OpenStruct.new({
+          :address => address,
+          :time    => Thimbl::Utils.parse_time( message['time'] ),
+          :text    => message['text']
+        })
       end
       
-      result = result.sort { |a,b| a['time'] <=> b['time'] }
+      result = result.sort { |a,b| a.time <=> b.time }
     
       return result
     end
-
-    # Returns the actual thimbl user account
-    def me
-      data['me']
-    end
     
-    # Returns all the info about the users you are following.
+    # Returns all the info about the users this user is following.
     def following
-      data['plans'][me]['following']
+      result = []
+      
+      data['following'].each do |chased|
+        result << OpenStruct.new({
+          :nick    => chased['nick'],
+          :address => chased['address']
+        })
+      end
+      
+      return result
     end
     
-    # Returns the actual plan
-    def plan
-      data['plans'][me]
+    # Returns all the user properties
+    def properties
+      OpenStruct.new({
+        :bio      => data['bio'],
+        :name     => data['name'],
+        :email    => data['properties']['email'],
+        :mobile   => data['properties']['mobile'],
+        :website  => data['properties']['website']
+      })
     end
+    
+    # Update all the user properties
+    # _This method doesn't push the modifications to de server._
+    def properties=( opts = {} )
+      data['bio']                   = opts[:bio]      unless opts[:bio].nil?
+      data['name']                  = opts[:name]     unless opts[:name].nil?
+      data['properties']['email']   = opts[:email]    unless opts[:email].nil?
+      data['properties']['mobile']  = opts[:mobile]   unless opts[:mobile].nil?
+      data['properties']['website'] = opts[:website]  unless opts[:website].nil?
+    end
+    
+    private
+    
+      def fetch_plan
+        finger_response = Thimbl::Finger.run address
+      
+        if( finger_response.nil? || finger_response.match(/Plan:\s*(.*)/m).nil? )
+          raise NoPlanException, 'Not Thimbl Plan in this address'
+        end
+      
+        finger_plan = finger_response.match(/Plan:\s*(.*)/m)[1].gsub("\\\n",'')
+      
+        return finger_plan
+      end
+      
   end
 end

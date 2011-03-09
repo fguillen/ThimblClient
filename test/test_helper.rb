@@ -3,3 +3,5 @@ require 'test/unit'
 require 'mocha'
 require 'ruby-debug'
 require 'delorean'
+
+FIXTURES_PATH = "#{File.dirname(__FILE__)}/fixtures"

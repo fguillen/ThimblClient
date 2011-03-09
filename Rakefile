@@ -2,7 +2,7 @@ require 'rubygems'
 require 'rake'  
 require 'echoe'  
   
-Echoe.new('thimbl', '0.1.2') do |p|  
+Echoe.new('thimbl', '0.2.0') do |p|  
   p.description     = "Small client for the distributed microbloging protocol: [thimbl](http://www.thimbl.net/)"  
   p.url             = "http://github.com/fguillen/ThimblClient"
   p.author          = "Fernando Guillen"

@@ -9,10 +9,13 @@ lib/thimbl/base.rb
 lib/thimbl/command.rb
 lib/thimbl/finger.rb
 lib/thimbl/utils.rb
-test/fixtures/cache.json
-test/fixtures/cache_error_nil.json
 test/fixtures/finger_dk_telekommunisten_org.txt
 test/fixtures/finger_dk_telekommunisten_org_two_break_lines.txt
+test/fixtures/messages_1.json
+test/fixtures/messages_2.json
+test/fixtures/messages_3.json
+test/fixtures/official_plan.json
+test/fixtures/print.txt
 test/test_helper.rb
 test/thimbl_base_test.rb
 test/thimbl_command_test.rb

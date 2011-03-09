@@ -1,76 +1,91 @@
 module Thimbl
   class Command 
-    CACHE_PATH = File.expand_path( "~#{ENV['USER']}/.thimbl/cache.json" )
+    THIMBL_FOLDER = File.expand_path( "~#{ENV['USER']}/.thimbl" )
+    
+    def self.version
+      "0.2.0"
+    end
     
     def self.setup( *args )
       if( args.size != 1 )
-        raise ArgumentError, "use: $ thimbl setup <thimbl_user>"
+        raise ArgumentError, "use: $ thimblr setup <thimbl_user>"
+      end
+      
+      if !File.exists? File.dirname( thimbl_folder )
+        FileUtils.mkdir_p File.dirname( thimbl_folder )
       end
     
-      thimbl = Thimbl::Base.new( 'address' => args[0] )
-      save_cache thimbl.data
-    end
-    
-    def self.save_cache data
-      if !File.exists? File.dirname( cache_path )
-        FileUtils.mkdir_p File.dirname( cache_path )
-      end
-
-      File.open( cache_path, 'w' ) do |f|
-        f.write( data.to_json )
-      end
+      save_actual args[0]
     end
 
     def self.print
-      thimbl = Thimbl::Command.load
-      return thimbl.print
-    end
-  
-    def self.fetch
-      thimbl = Thimbl::Command.load
+      thimbl = get_actual
       thimbl.fetch
-      save_cache thimbl.data
-    end
-  
-    def self.post( text )
-      if( text.nil? || text.empty? )
-        raise ArgumentError, "use: $ thimbl post <message>"
+      
+      # user's messages
+      messages = thimbl.messages
+      
+      # user's following's messages
+      thimbl.following.each do |followed|
+        thimbl = Thimbl::Base.new followed.address
+        begin
+          thimbl.fetch
+          messages += thimbl.messages
+        rescue Thimbl::NoPlanException
+          puts "Error fetching #{followed.address} messages"
+        end
       end
-      thimbl = Thimbl::Command.load
-      thimbl.post text
-      save_cache thimbl.data
-    end
-    
-    def self.push( password )
-      if( password.nil? || password.empty? )
-        raise ArgumentError, "use: $ thimbl push <password>"
-      end
-      thimbl = Thimbl::Command.load
-      thimbl.push password
-    end
-  
-    def self.follow( nick, address )
-      if( nick.nil? || nick.empty? || address.nil? || address.empty? )
-        raise ArgumentError, "use: $ thimbl follow <nick> <address>"
-      end
-      thimbl = Thimbl::Command.load
-      thimbl.follow nick, address
-      save_cache thimbl.data
-    end
-  
-    def self.load
-      if( !File.exists? cache_path )
-        raise ArgumentError, "Thimbl need to setup, use: $ thimbl setup <thimbl_user>"
+      
+      messages = messages.sort { |a,b| a.time <=> b.time }
+      
+      result = ""
+      messages.each do |message|
+        result += message.time.strftime( '%Y-%m-%d %H:%M:%S' )
+        result += " #{message.address}"
+        result += " > #{message.text}"
+        result += "\n"
       end
     
-      thimbl = Thimbl::Base.new 
-      thimbl.data = JSON.load File.read cache_path
-
-      return thimbl
+      return result
+    end
+  
+    def self.post( text = nil, password = nil)
+      if( text.nil? || text.empty? || password.nil? )
+        raise ArgumentError, "use: $ thimblr post <message> <password>"
+      end
+      
+      thimbl = get_actual
+      thimbl.post! text, password
+    end
+  
+    def self.follow( nick = nil, address = nil, password = nil )
+      if( nick.nil? || nick.empty? || address.nil? || address.empty? || password.nil? )
+        raise ArgumentError, "use: $ thimblr follow <nick> <address> <password>"
+      end
+      
+      thimbl = get_actual
+      thimbl.follow! nick, address, password
     end
     
-    def self.cache_path
-      CACHE_PATH
-    end
+    private
+   
+      def self.save_actual( address )
+        File.open( "#{thimbl_folder}/actual", 'w' ) { |f| f.write address }
+      end
+    
+      def self.get_actual
+        if( !File.exists? "#{thimbl_folder}/actual" )
+          raise ArgumentError, "Thimbl need to setup, use: $ thimblr setup <thimbl_user>"
+        end
+      
+        thimbl = Thimbl::Base.new File.read( "#{thimbl_folder}/actual" )
+        thimbl.fetch
+      
+        return thimbl
+      end
+    
+      def self.thimbl_folder
+        THIMBL_FOLDER
+      end
   end
 end

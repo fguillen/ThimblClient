@@ -1,0 +1,69 @@
+{
+    "bio": "Venture Communist",
+    "following": [
+        {
+            "address": "mike@mikepearce.net",
+            "nick": "mike"
+        },
+        {
+            "address": "rw@telekommunisten.org",
+            "nick": "rico"
+        },
+        {
+            "address": "ashull@telekommunisten.org",
+            "nick": "ashull"
+        }
+    ],
+    "messages": [
+        {
+            "text": "Hey @mark, this is the first update sent with Thimbl-CLI",
+            "time": "20101105124412"
+        },
+        {
+            "text": "mike needs to stop sending messages from the future!",
+            "time": "20100707125120"
+        },
+        {
+            "text": "#thimbl is rolling!",
+            "time": "20100707122140"
+        },
+        {
+            "text": "I love thimbl! #thimbl",
+            "time": "20100622170914"
+        }
+    ],
+    "name": "Dmytri Kleiner",
+    "properties": {
+        "email": "dk@telekommunisten.net",
+        "mobile": "+491632866163",
+        "website": "http://www.telekommunisten.net"
+    },
+    "replies": {
+        "ashull@telekommunisten.org": [
+            {
+                "text": "@ashull, the feed is awesome, works great!",
+                "time": "20100707122315"
+            },
+            {
+                "text": "@ashull, here is a reply",
+                "time": "20100705163145"
+            }
+        ],
+        "mike@mikepearce.net": [
+            {
+                "text": "@mike, the baboon would win. No contest",
+                "time": "20100707122100"
+            },
+            {
+                "text": "@mike, do you like this json format?",
+                "time": "20100622170025"
+            }
+        ],
+        "rw@telekommunisten.org": [
+            {
+                "text": "@rico, I'll call you later",
+                "time": "20100622162340"
+            }
+        ]
+    }
+}

@@ -6,15 +6,20 @@ I have follow the style of the [Thimbl Python client](https://github.com/blippy/
 
 ## Commands
 
-* follow
 * fetch
+* follow
 * post
-* print
 * push
+
+## Attributes
+
+* messages
+* following
+* properties
 
 ## Version
 
-This version is in development, not ready for any production environment.
+This version is in development, use it in production environment under your own responsability.
 
 ## Install
 
@@ -24,18 +29,20 @@ This version is in development, not ready for any production environment.
 
     require 'rubygems'
     require 'thimbl'
-    thimbl = 
+    thimbl =
       Thimbl::Base.new(
-        'bio'      => 'my bio',
-        'website'  => 'my website', 
-        'mobile'   => 'my mobile', 
-        'email'    => 'my email', 
-        'address'  => 'me@thimbl.net', 
-        'name'     => 'my name'
+        'user@thimbl.net',
+        {
+          :bio      => 'my bio',
+          :website  => 'my website', 
+          :mobile   => 'my mobile', 
+          :email    => 'my email', 
+          :name     => 'my name'
+        }
       )
     thimbl.follow 'dk', 'dk@telekommunisten.org'
     thimbl.fetch
-    thimbl.print
+    thimbl.messages
     thimbl.post 'My first post'
     thimbl.push 'password'
     
@@ -44,15 +51,11 @@ This version is in development, not ready for any production environment.
 The gem comes with a *shell command*, you can use it like this:
     
     thimblr setup 'user@thimblrserver.com'
-    thimblr follow 'dk' 'dk@telekommunisten.org'
-    thimblr fetch
+    thimblr follow 'dk' 'dk@telekommunisten.org' 'my password'
     thimblr print
-    thimblr post "My first message :)"
-    thimblr push <password>
+    thimblr post 'My first message :)' 'my password'
     
 ## TODO
 
 * Support *simbolize* hash keys
-* In the Thimbl::Command.setup ask for the rest of the configuration options *bio*, *mobile*, ...
-* thimbl.unfollow
-* ERROR: If finger respond empty Plan
+* Reply to another message support

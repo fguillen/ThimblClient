@@ -3,10 +3,8 @@
 # Use:
 #     thimblr setup 'user@thimblrserver.com'
 #     thimblr follow 'dk' 'dk@telekommunisten.org'
-#     thimblr fetch
 #     thimblr print
 #     thimblr post "My first message :)"
-#     thimblr push
 
 begin
   require 'thimbl'
@@ -16,18 +14,17 @@ rescue LoadError
 end
 
 if ARGV.empty?
-  puts "use: $ thimbl <command>"
+  puts "use: $ thimblr <command>"
   exit 1
 end
 
 begin
   case ARGV[0]
   when 'setup';   Thimbl::Command.setup( *ARGV[1..4] ); puts "setup completed"
+  when 'version'; puts Thimbl::Command.version
   when 'print';   puts Thimbl::Command.print
-  when 'fetch';   Thimbl::Command.fetch; puts "fecth completed"
-  when 'post';    Thimbl::Command.post ARGV[1]; puts "post completed"
-  when 'push';    Thimbl::Command.push ARGV[1]; puts "push completed"
-  when 'follow';  Thimbl::Command.follow( ARGV[1], ARGV[2] ); puts "follow completed"
+  when 'post';    Thimbl::Command.post( ARGV[1], ARGV[2] ); puts "post completed"
+  when 'follow';  Thimbl::Command.follow( ARGV[1], ARGV[2], ARGV[3] ); puts "follow completed"
   else
     puts "command not valid '#{ARGV[0]}'"
     exit 1
