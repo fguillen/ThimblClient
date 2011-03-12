@@ -181,7 +181,7 @@ module Thimbl
         finger_response = Thimbl::Finger.run address
       
         if( finger_response.nil? || finger_response.match(/Plan:\s*(.*)/m).nil? )
-          raise NoPlanException, 'Not Thimbl Plan in this address'
+          raise NoPlanException, "Not Thimbl Plan in this address: '#{address}'"
         end
       
         finger_plan = finger_response.match(/Plan:\s*(.*)/m)[1].gsub("\\\n",'')
