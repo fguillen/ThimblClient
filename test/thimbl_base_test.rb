@@ -168,6 +168,36 @@ class ThimblBaseTest < Test::Unit::TestCase
     assert_equal 'messages_1 a', last.text
     assert_equal '20101105124412', last.time.strftime('%Y%m%d%H%M%S')
   end
+  
+  def test_messages_when_plan_has_not_messages
+    thimbl = Thimbl::Base.new 'user@thimbl.net'
+    thimbl.data = JSON.load File.read "#{FIXTURES_PATH}/no_messages.json"
+    
+    assert_equal [], thimbl.messages
+  end
+  
+  def test_following
+    thimbl = Thimbl::Base.new 'user@thimbl.net'
+    thimbl.data = JSON.load File.read "#{FIXTURES_PATH}/following.json"
+
+    assert_equal( 2, thimbl.following.size )
+    
+    first = thimbl.following.first
+    last = thimbl.following.last
+    
+    assert_equal 'mike@mikepearce.net', first.address
+    assert_equal 'mike', first.nick
+    
+    assert_equal 'rw@telekommunisten.org', last.address
+    assert_equal 'rico', last.nick
+  end
+  
+  def test_following_when_plan_has_not_following
+    thimbl = Thimbl::Base.new 'user@thimbl.net'
+    thimbl.data = JSON.load File.read "#{FIXTURES_PATH}/no_following.json"
+    
+    assert_equal [], thimbl.following
+  end
     
   def test_parse_time
     assert_equal( Time.utc( 2010, 11, 29, 6, 3, 35 ), Thimbl::Utils.parse_time( '20101129060335' ) )

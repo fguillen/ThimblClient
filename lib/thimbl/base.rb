@@ -121,6 +121,8 @@ module Thimbl
     # Returns all this user's messages 
     # in a chronologic order.
     def messages
+      return []  if data['messages'].nil?
+      
       result = []
       
       data['messages'].each do |message|
@@ -138,6 +140,8 @@ module Thimbl
     
     # Returns all the info about the users this user is following.
     def following
+      return []  if data['following'].nil?
+      
       result = []
       
       data['following'].each do |chased|
